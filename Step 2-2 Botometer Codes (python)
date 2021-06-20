@@ -1,0 +1,67 @@
+pip install tweepy, botometer
+
+import botometer, tweepy
+
+rapidapi_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+twitter_app_auth = {
+    'consumer_key': 'xxxxxxxx',
+    'consumer_secret': 'xxxxxxxxxx',
+    'access_token': 'xxxxxxxxx',
+    'access_token_secret': 'xxxxxxxxxxx',
+  }
+bom = botometer.Botometer(wait_on_ratelimit=True,
+                          rapidapi_key=rapidapi_key,
+                          **twitter_app_auth)
+
+# Check a single account by screen name
+result = bom.check_account('@clayadavis')
+
+# Check a single account by id
+result = bom.check_account(1548959833)
+
+# Check a sequence of accounts
+accounts = ['@notabot','@ahuman'] #List the accounts here
+
+results = [] #Create an empty list
+for screen_name, result in bom.check_accounts_in(accounts):
+    results.append(result)
+
+print(result)
+
+#This writes the above output which is in a JSON format as a CSV. 
+#In this state it contains all the data from botometer about bot type.
+
+results[0]["error"] = ''  
+keys = results[0].keys() 
+
+a_file = open("output.csv", "w")
+
+dict_writer = csv.DictWriter(a_file, keys)
+
+dict_writer.writeheader()
+
+dict_writer.writerows(results)
+
+a_file.close()
+
+#This creates two list from the output that contain the overall bot score as 'cap' and user or account name.
+#print (results[0].keys())
+
+results2 =[]
+for d in results:
+    if "user" in d.keys():
+        results2.append(d['cap']['english'])
+    else: results2.append("Notimelineerror") 
+        
+print(accounts)#Username of the twitter account
+print(results2)#cap score assigned to that account by botometer
+
+#This uses Pandas to zip the lists together
+zippedList =  list(zip(accounts, results2))
+
+# This creates a dataframe from the now zipped list
+dfObj = pandas.DataFrame(zippedList, columns = ['user' , 'cap']) 
+dfObj
+
+#This exports the list as a CSV to be labeled and combined with the main dataset
+dfObj.to_csv("out.csv", index=False)
