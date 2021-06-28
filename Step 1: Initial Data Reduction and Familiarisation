@@ -14,14 +14,25 @@ filter1 <- c("blood|clot|J&J|johnson|astrazeneca|oxford")
 
 bloodclot_filter1 <- reduced_df[grep(paste0(filter1, collapse = "|"), reduced_df$text),]
 
-#STEP 1: Tidytext was used to tokenise all the words as a dataframe r/t create a corpus
+#STEP 1: Create a frequency table of hashtags  
+
+hashtag_summary<-bloodclot_filter1 [c(5)]
+
+hashtag_nospace<-hashtag_summary
+hashtag_nospace$hashtags<-gsub("\\s", ", ", hashtag_nospace$hashtags)
+
+hashtag_table<-table(unlist(strsplit(as.character(hashtag_nospace$hashtags), ',')))
+hashtag_table<-as.data.frame.table(hashtag_table) %>%
+  arrange((desc(Freq)))
+
+#STEP 2: Tidytext was used to tokenise all the words as a dataframe r/t create a corpus
 
 tidy_corpus<- bloodclot_filter1 %>%
   select(user_screen_name,text) %>%
   unnest_tokens("word", text)
 word_counts <- head(tidy_corpus)
 
-#STEP 2: Stop words and redundant Twitter terms were removed.
+#STEP 3: Stop words and redundant Twitter terms were removed.
 
 data("stop_words")
 
@@ -34,7 +45,7 @@ top_words<-tidy_corpus %>%
      count(word) %>%
   arrange(desc(n)) #word were then examined in the the "top_words" df
 
-#STEP 3: Term Frequency:inverse document Frequency (tf-idf)
+#STEP 4: Term Frequency:inverse document Frequency (tf-idf)
 
 tidy_corpus_tfidf <- bloodclot_filter1 %>%
   select(user_screen_name, text) %>%
@@ -45,18 +56,6 @@ tidy_corpus_tfidf <- bloodclot_filter1 %>%
   
 top_tfidf <- tidy_corpus_tfidf %>%
   arrange(desc(tf_idf))
-
-#STEP 4: Create a frequency table of hashtags  
-
-hashtag_summary<-bloodclot_filter1 [c(5)]
-
-hashtag_nospace<-hashtag_summary
-hashtag_nospace$hashtags<-gsub("\\s", ", ", hashtag_nospace$hashtags)
-
-hashtag_table<-table(unlist(strsplit(as.character(hashtag_nospace$hashtags), ',')))
-hashtag_table<-as.data.frame.table(hashtag_table) %>%
-  arrange((desc(Freq)))
-
 
 #Step 5 remove emojis, non-latin & ASCII characters before exporting the data set to Cortext
 
