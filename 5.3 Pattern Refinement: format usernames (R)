@@ -1,3 +1,5 @@
+#This step formats the twitter usernames so botometer can read them.
+
 bloodclot_controversy_coding_botomter_test$user_name <- sub("^", "'@", bloodclot_controversy_coding_botomter_test$user_name )
 bloodclot_controversy_coding_botomter_test$user_name <- paste0(bloodclot_controversy_coding_botomter_test$user_name, "',")
 
